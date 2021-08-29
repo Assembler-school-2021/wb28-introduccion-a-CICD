@@ -1,5 +1,6 @@
 # wb28-introduccion-a-CICD
 
+```
 apt-get update
 apt-get install default-jdk git nginx ufw python-certbot-nginx
 
@@ -7,9 +8,9 @@ wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
 sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
 apt-get update
 apt-get install jenkins
-
+``` 
 Creamos un proxypass en nginx para jenkins al 8080:
-
+```
 upstream jenkins {
   keepalive 32; # keepalive connections
   server 127.0.0.1:8080; # jenkins ip and port
@@ -89,11 +90,12 @@ server {
     return 404; # managed by Certbot
 
 }
-
+```
 
 Instalamos jenkins y creamos el usuario enrique con el pass Wb28_2021
 
-Cuando lo tengas todo , añade a los pasos de build de django la ejecución del deploy. Jenkins deberá hacer ssh al servidor nuevo, cambiar a la carpeta donde está el repo, hacer git pull, correr migraciones si las hubiese, cambiar los permisos a www-data y finalmente hacer un reload del uwsgi si todo ha ido bien.
+> Cuando lo tengas todo , añade a los pasos de build de django la ejecución del deploy. Jenkins deberá hacer ssh al servidor nuevo, cambiar a la carpeta donde está el repo, hacer git pull, correr migraciones si las hubiese, cambiar los permisos a www-data y finalmente hacer un reload del uwsgi si todo ha ido bien.
+```
 #!/bin/bash -x
 
 ####################################
@@ -111,9 +113,9 @@ ssh -A root@65.21.186.195 "cd ${PROJECT_NAME} && python3 manage.py makemigration
 ssh -A root@65.21.186.195 "chown -R www-data: ${PROJECT_NAME}" && 
  
 ssh -A root@65.21.186.195 "service uwsgi reload"
+```
 
-
-Gitlab plugin
+## Gitlab plugin
 Usamos github en lugar de gitlab. Nos vamos a la configuración del proyecto de github en el apartado de webhooks y creamos un nuevo webhook para la rama master. El web hook es el siguiente:
 http://jenkins.devops-alumno08.com:8080/github-webhook/
 
@@ -121,9 +123,9 @@ En jenkins hay que habilitar la opción de GitHub hook trigger for GITScm pollin
 
 Al hacer commit a master se lanza automáticamente (tras un periodo de gracia de 3 segundos) el build.
 
-Builds avanzadas
+## Builds avanzadas
 Usamos github en lugar de gitlab. Esta es la config final:
-
+```
 #!/bin/bash -x
 
 function parse_environment_and_branch() {
@@ -187,3 +189,4 @@ echo "Algo ha fallado en la ejecucion"
 exit 1
 
 }
+```
